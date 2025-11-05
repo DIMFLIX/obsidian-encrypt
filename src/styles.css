@@ -15,6 +15,12 @@ div[data-type="meld-encrypted-view"] .view-content {
 
 /* FEATURE TEXT ENCRYPT - SOLARGATE STYLE */
 
+/* Live Preview widget container */
+.meld-inline-widget-container {
+  display: inline-block;
+  vertical-align: middle;
+}
+
 /* Inline Secret Button - SVG Style like solargate */
 .meld-inline-secret-button {
   background-color: var(--text-faint) !important;
