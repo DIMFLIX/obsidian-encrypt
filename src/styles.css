@@ -32,7 +32,7 @@ div[data-type="meld-encrypted-view"] .view-content {
   padding: 10px 16px;
   min-height: 36px;
   min-width: 140px;
-  background: var(--interactive-accent);
+  background: var(--background-secondary);
   border: none;
   border-radius: 10px;
   color: var(--text-accent);
