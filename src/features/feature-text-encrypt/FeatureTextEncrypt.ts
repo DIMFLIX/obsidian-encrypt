@@ -40,31 +40,28 @@ export default class FeatureTextEncrypt implements IMeldEncryptPluginFeature {
 
 		// Markdown processor for rendered view (Reading + LP render)
 		this.plugin.registerMarkdownPostProcessor((root, ctx: MarkdownPostProcessorContext)=>{
-			// Only inline code, skip fenced blocks
-			const codes = root.querySelectorAll('code');
-			codes.forEach((code)=>{
-				// Ignore code inside pre (fenced blocks)
-				if (code.closest('pre')) return;
-				let raw = code.textContent ?? '';
+			// Handle inline code in Reading Mode (code:not(pre code)) and Live Preview (span.cm-inline-code)
+			const nodes: HTMLElement[] = [];
+			root.querySelectorAll('code').forEach((c)=>{ if (!c.closest('pre')) nodes.push(c as HTMLElement); });
+			root.querySelectorAll('span.cm-inline-code').forEach((s)=>{ nodes.push(s as HTMLElement); });
+
+			nodes.forEach((node)=>{
+				let raw = node.textContent ?? '';
 				let text = raw.trim();
-				// Some themes may keep backticks visually; normalize defensively
-				if (text.startsWith('`') && text.endsWith('`')) {
-					text = text.slice(1, -1).trim();
-				}
-				// Must start with meld-encrypt and a space before JSON
+				// In some themes/code paths backticks may leak; strip defensively
+				if (text.startsWith('`') && text.endsWith('`')) text = text.slice(1, -1).trim();
 				if (!text.toLowerCase().startsWith('meld-encrypt')) return;
 				const sp = text.indexOf(' ');
 				if (sp < 0) return;
 				const jsonStr = text.slice(sp+1).trim();
-				let data: any;
-				try { data = JSON.parse(jsonStr); } catch { return; }
+				let data: any; try { data = JSON.parse(jsonStr); } catch { return; }
 				if (!data || !data.version || !data.encodedData) return;
 
-				// Transform inline code to SVG-mask button
-				code.textContent = '';
-				code.classList.add('meld-inline-secret-button');
-				if (data.hint && String(data.hint).trim()) code.setAttribute('title', `Hint: ${data.hint}`);
-				code.addEventListener('click', async (e)=>{
+				// Transform inline into SVG-mask button
+				node.textContent = '';
+				node.classList.add('meld-inline-secret-button');
+				if (data.hint && String(data.hint).trim()) node.setAttribute('title', `Hint: ${data.hint}`);
+				node.addEventListener('click', async (e)=>{
 					e.preventDefault();
 					await this.decryptInlineSecret(data);
 				});
