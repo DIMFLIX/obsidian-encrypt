@@ -75,7 +75,7 @@ export default class FeatureTextEncrypt implements IMeldEncryptPluginFeature {
 		// Check if text looks like encrypted content
 		try {
 			const decoded = JsonFileEncoding.decode(text.trim());
-			return decoded && decoded.encodedData && decoded.encodedData.length > 0;
+			return Boolean(decoded && decoded.encodedData && decoded.encodedData.length > 0);
 		} catch {
 			return false;
 		}
