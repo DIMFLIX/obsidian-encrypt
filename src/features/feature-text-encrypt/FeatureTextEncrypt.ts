@@ -44,10 +44,8 @@ export default class FeatureTextEncrypt implements IMeldEncryptPluginFeature {
 
 		// Markdown processor for Reading mode
 		this.plugin.registerMarkdownPostProcessor((root, ctx: MarkdownPostProcessorContext)=>{
-			// Handle inline code in Reading Mode only (code:not(pre code))
 			const codes = root.querySelectorAll('code');
 			codes.forEach((code)=>{
-				// Ignore code inside pre (fenced blocks)
 				if (code.closest('pre')) return;
 				let raw = code.textContent ?? '';
 				let text = raw.trim();
@@ -59,14 +57,42 @@ export default class FeatureTextEncrypt implements IMeldEncryptPluginFeature {
 				let data: any; try { data = JSON.parse(jsonStr); } catch { return; }
 				if (!data || !data.version || !data.encodedData) return;
 
-				// Transform inline code to SVG-mask button
-				code.textContent = '';
-				code.classList.add('meld-inline-secret-button');
-				if (data.hint && String(data.hint).trim()) code.setAttribute('title', `Hint: ${data.hint}`);
-				code.addEventListener('click', async (e)=>{
-					e.preventDefault();
-					await this.decryptInlineSecret(data);
-				});
+				// Default view = button
+				const renderButton = () => {
+					code.textContent = '';
+					code.classList.add('meld-inline-secret-button');
+					code.setAttribute('role','button');
+					if (data.hint && String(data.hint).trim()) code.setAttribute('title', `Hint: ${data.hint}`);
+					code.onclick = async (e)=>{
+						e.preventDefault();
+						await openDecrypt();
+					};
+				};
+
+				const renderRevealed = (plain: string) => {
+					code.classList.remove('meld-inline-secret-button');
+					code.textContent = '';
+					const wrap = document.createElement('div');
+					wrap.className = 'meld-decrypt-block';
+					const cnt = document.createElement('div'); cnt.className = 'meld-decrypt-content'; cnt.textContent = plain; wrap.appendChild(cnt);
+					const hide = document.createElement('button'); hide.className = 'meld-decrypt-hide-button'; hide.textContent = 'Hide';
+					hide.onclick = ()=>renderButton();
+					wrap.appendChild(hide);
+					code.appendChild(wrap);
+				};
+
+				const openDecrypt = async () => {
+					try{
+						const pm = new PluginPasswordModal(this.plugin.app,'Decrypt Secret',false,false,{ password:'', hint: data.hint || ''});
+						const pwh: PasswordAndHint = await pm.openAsync();
+						if (!pm.resultConfirmed) return;
+						const decrypted = await FileDataHelper.decrypt(data, pwh.password);
+						if (decrypted == null) throw new Error('Invalid password or corrupted data');
+						renderRevealed(decrypted);
+					}catch(err){ new Notice(`Decryption error: ${err}`, 6000); }
+				};
+
+				renderButton();
 			});
 		});
 	}
@@ -84,17 +110,6 @@ export default class FeatureTextEncrypt implements IMeldEncryptPluginFeature {
 			const data = JSON.parse(t.slice(sp+1).trim());
 			return !!(data && data.version && data.encodedData);
 		} catch { return false; }
-	}
-
-	private async decryptInlineSecret(encryptedData: any) {
-		try{
-			const pm = new PluginPasswordModal(this.plugin.app,'Decrypt Secret',false,false,{ password:'', hint: encryptedData.hint || ''});
-			const pwh: PasswordAndHint = await pm.openAsync();
-			if (!pm.resultConfirmed) return;
-			const decrypted = await FileDataHelper.decrypt(encryptedData, pwh.password);
-			if (decrypted == null) throw new Error('Invalid password or corrupted data');
-			new Notice(`🔓 Secret: ${decrypted}`, 5000);
-		}catch(err){ new Notice(`Decryption error: ${err}`, 8000); }
 	}
 
 	private async encryptSelectedText(editor: Editor, selectedText: string) {
@@ -124,10 +139,5 @@ export default class FeatureTextEncrypt implements IMeldEncryptPluginFeature {
 			editor.replaceSelection(decrypted);
 			new Notice('🔓 Text decrypted 🔓');
 		}catch(err){ new Notice(`Decryption error: ${err}`, 8000); }
-	}
-
-	// Public method for InlineWidget to use
-	public async decryptInlineSecretFromWidget(encryptedData: any) {
-		return this.decryptInlineSecret(encryptedData);
 	}
 }
