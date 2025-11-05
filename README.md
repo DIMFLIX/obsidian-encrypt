@@ -8,20 +8,35 @@ Encrypted notes are never decrypted to disk giving you peace-of-mind that the de
 
 ## Features
 
-### 🆕 Context Menu Text Encryption
+### 🆕 Enhanced Visual Text Encryption
 - **Right-click any selected text** to encrypt or decrypt it instantly
-- **Seamless workflow**: Select text → Right-click → Choose "Зашифровать выделенный текст" or "Расшифровать выделенный текст"
-- **Smart detection**: The plugin automatically detects whether selected text is already encrypted
+- **Beautiful encrypted blocks**: Instead of raw JSON, encrypted text appears as stylish lock buttons
+- **Smart hint display**: Shows your custom hint or "SECRET" as default
+- **Click to decrypt**: Simply click the lock button to decrypt the content
+- **Temporary reveal**: Decrypted text shows temporarily with a "Hide" button
 - **In-place replacement**: Encrypted/decrypted text replaces the selection directly in your note
 - **Password protection**: Each text selection can have its own password and hint
-- **Keyboard shortcut support**: Use the command palette or assign custom hotkeys
+- **Seamless workflow**: Select text → Right-click → Choose "Encrypt selected text" or "Decrypt selected text"
+
+### Visual Experience
+
+Instead of seeing ugly JSON like this:
+```json
+{
+  "version": "2.0",
+  "hint": "my secret",
+  "encodedData": "DxMN8S64QCQVflNkiWntfpqBbL3sPQodw1D4rWp5pxJAGYjZzbPxlG9iGOCRFBIO/rtupJQKhroGr/gs"
+}
+```
+
+You'll see a beautiful lock button: **🔒 my secret** (or **🔒 SECRET** if no hint was provided)
 
 ### Existing Features
 - Encrypt entire notes
-- In-place text encryption and decryption
 - Session password caching
 - Multiple encryption methods
 - File menu integration
+- Keyboard shortcut support
 
 ---
 
@@ -33,19 +48,34 @@ Encrypted notes are never decrypted to disk giving you peace-of-mind that the de
 
 ---
 
-## How to Use Context Menu Encryption
+## How to Use Visual Text Encryption
 
+### Encrypting Text
 1. **Select any text** in your note that you want to encrypt
 2. **Right-click** on the selected text
-3. **Choose "Зашифровать выделенный текст"** from the context menu
+3. **Choose "Encrypt selected text"** from the context menu
 4. **Enter a password** and optional hint when prompted
-5. **Confirm** - your selected text will be replaced with encrypted content
+5. **Confirm** - your selected text will be replaced with a beautiful lock button showing your hint
 
-To decrypt:
-1. **Select the encrypted text block** (the JSON-formatted encrypted content)
-2. **Right-click** and choose "Расшифровать выделенный текст"
-3. **Enter the password** used for encryption
-4. **Confirm** - the encrypted text will be replaced with the original content
+### Decrypting Text
+1. **Click on the lock button** (🔒 with your hint)
+2. **Enter the password** used for encryption
+3. **Confirm** - the decrypted text will appear temporarily
+4. **Click "Hide"** to return to the encrypted lock button state
+
+### Alternative Method (Context Menu)
+You can also:
+1. **Select the entire encrypted block**
+2. **Right-click** and choose "Decrypt selected text"
+3. **Enter password** and the encrypted block will be permanently replaced with plain text
+
+## Styling
+
+The plugin automatically adapts to your Obsidian theme:
+- **Light themes**: Clean, minimal design with subtle shadows
+- **Dark themes**: Elegant dark styling with proper contrast
+- **Hover effects**: Buttons lift slightly when hovered
+- **Click animations**: Smooth transitions and feedback
 
 ## Ongoing Maintenance and Development
 
@@ -61,11 +91,15 @@ Thank you for your support 😊
 
 ## Latest Changes
 
-### New in this Fork
-- ✨ **Context Menu Integration**: Right-click selected text to encrypt/decrypt instantly
-- 🎯 **Smart Text Detection**: Automatically detects encrypted vs plain text
-- 🚀 **Seamless UX**: No need to use commands or buttons - just select and right-click
-- 🇷🇺 **Localized Interface**: Russian language support for menu items and notifications
+### ✨ New in this Enhanced Fork
+- **🎨 Beautiful Visual Design**: No more ugly JSON blocks - encrypted text appears as elegant lock buttons
+- **📝 Smart Hint Display**: Shows your custom hint or "SECRET" as fallback
+- **🕰️ Click to Decrypt**: Simply click the lock button to decrypt temporarily
+- **🔄 Hide/Show Toggle**: Decrypted content can be hidden again without re-encryption
+- **🌍 English Interface**: Professional English UI throughout
+- **🎨 Theme Integration**: Seamless integration with light and dark themes
+- **🚀 Enhanced UX**: Smooth animations and hover effects
+- **🎯 Context Menu Integration**: Right-click selected text to encrypt/decrypt instantly
 
 Information about the original plugin's latest release can be found on the [release notes](https://meld-cp.github.io/obsidian-encrypt/release-notes.html) page.
 
