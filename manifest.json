@@ -1,14 +1,11 @@
 {
-	"id": "meld-encrypt",
-	"name": "Meld Encrypt",
+	"id": "meld-encrypt-fork",
+	"name": "Meld Encrypt Fork",
 	"version": "2.4.5",
 	"minAppVersion": "1.0.3",
 	"description": "Hide secrets in your vault",
-	"author": "meld-cp",
-	"authorUrl": "https://github.com/meld-cp/obsidian-encrypt",
+	"author": "DIMFLIX",
+	"authorUrl": "https://github.com/DIMFLIX/obsidian-encrypt",
 	"isDesktopOnly": false,
-	"fundingUrl": {
-		"Buy Me a Coffee": "https://www.buymeacoffee.com/cleon",
-		"GitHub Sponsor": "https://github.com/sponsors/meld-cp"
-	}
+	"fundingUrl": "https://dimflix.github.io/"
 }
