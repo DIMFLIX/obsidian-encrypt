@@ -1,7 +1,7 @@
 import MeldEncrypt from "../../main.ts";
 import { IMeldEncryptPluginSettings } from "../../settings/MeldEncryptPluginSettings.ts";
 import { IMeldEncryptPluginFeature } from "../IMeldEncryptPluginFeature.ts";
-import { Notice, MarkdownView, Editor, MarkdownRenderer, Component } from "obsidian";
+import { Notice, MarkdownView, Editor, MarkdownRenderer, Component, MarkdownPostProcessorContext } from "obsidian";
 import PluginPasswordModal from "../../PluginPasswordModal.ts";
 import { PasswordAndHint } from "../../services/SessionPasswordService.ts";
 import { FileDataHelper, JsonFileEncoding } from "../../services/FileDataHelper.ts";
@@ -23,8 +23,8 @@ export default class FeatureTextEncrypt implements IMeldEncryptPluginFeature {
 				
 				// Only show menu item if text is selected
 				if (selection && selection.trim().length > 0) {
-					// Check if selected text is already encrypted (either inline JSON or code block)
-					if (this.isTextEncrypted(selection) || this.isEncryptedCodeBlock(selection)) {
+					// Check if selected text is already encrypted
+					if (this.isTextEncrypted(selection)) {
 						menu.addItem((item) => {
 							item
 								.setTitle('Decrypt selected text')
@@ -55,7 +55,7 @@ export default class FeatureTextEncrypt implements IMeldEncryptPluginFeature {
 			editorCallback: (editor: Editor) => {
 				const selection = editor.getSelection();
 				if (selection && selection.trim().length > 0) {
-					if (this.isTextEncrypted(selection) || this.isEncryptedCodeBlock(selection)) {
+					if (this.isTextEncrypted(selection)) {
 						this.decryptSelectedText(editor, selection);
 					} else {
 						this.encryptSelectedText(editor, selection);
@@ -66,9 +66,9 @@ export default class FeatureTextEncrypt implements IMeldEncryptPluginFeature {
 			}
 		});
 
-		// Register markdown post processor for rendering encrypted blocks
-		this.plugin.registerMarkdownCodeBlockProcessor('meld-encrypt', (source, el, ctx) => {
-			this.renderEncryptedBlock(el, source.trim(), ctx);
+		// Register markdown post processor for inline encrypted text
+		this.plugin.registerMarkdownPostProcessor((el, ctx) => {
+			this.processInlineEncryptedCode(el, ctx);
 		});
 	}
 
@@ -77,70 +77,57 @@ export default class FeatureTextEncrypt implements IMeldEncryptPluginFeature {
 	buildSettingsUi(containerEl: HTMLElement, saveSettingCallback: () => Promise<void>): void {}
 
 	private isTextEncrypted(text: string): boolean {
-		// Check if text looks like encrypted JSON content
-		try {
-			// Remove backticks if present
-			let cleanText = text.trim();
-			if (cleanText.startsWith('`') && cleanText.endsWith('`')) {
-				cleanText = cleanText.slice(1, -1);
+		// Check for inline format: `secret {...encrypted JSON...}`
+		const inlineMatch = text.match(/^`secret\s+([^`]+)`$/);
+		if (inlineMatch) {
+			try {
+				const jsonStr = inlineMatch[1];
+				const data = JSON.parse(jsonStr);
+				return !!(data && data.version && data.encodedData);
+			} catch {
+				return false;
 			}
+		}
+		return false;
+	}
+
+	private processInlineEncryptedCode(el: HTMLElement, ctx: MarkdownPostProcessorContext) {
+		const codeblocks = el.querySelectorAll('code');
+		for (let i = 0; i < codeblocks.length; i++) {
+			const codeblock = codeblocks.item(i);
+			const text = codeblock.innerText.trim();
 			
-			const decoded = JsonFileEncoding.decode(cleanText);
-			return Boolean(decoded && decoded.encodedData && decoded.encodedData.length > 0);
-		} catch {
-			return false;
+			// Check for our inline encrypted format
+			const match = text.match(/^secret\s+(.+)$/);
+			if (match) {
+				try {
+					const jsonStr = match[1];
+					const encryptedData = JSON.parse(jsonStr);
+					
+					if (encryptedData && encryptedData.version && encryptedData.encodedData) {
+						// Replace with SVG button
+						codeblock.empty();
+						codeblock.addClass('meld-inline-secret-button');
+						
+						// Add click handler
+						codeblock.addEventListener('click', async (e) => {
+							e.preventDefault();
+							await this.decryptInlineSecret(encryptedData);
+						});
+					}
+				} catch (error) {
+					// Not a valid encrypted block, ignore
+				}
+			}
 		}
 	}
 
-	private isEncryptedCodeBlock(text: string): boolean {
-		// Check if text is a meld-encrypt code block
-		return text.includes('```meld-encrypt') && text.includes('```');
-	}
-
-	private extractJsonFromCodeBlock(text: string): string {
-		// Extract JSON from meld-encrypt code block
-		const match = text.match(/```meld-encrypt\s*\n([\s\S]*?)\n```/);
-		return match ? match[1].trim() : text;
-	}
-
-	private renderEncryptedBlock(containerEl: HTMLElement, encryptedText: string, context: any) {
-		try {
-			const encryptedData = JsonFileEncoding.decode(encryptedText);
-			const hint = encryptedData.hint || 'SECRET';
-			
-			// Clear container and add our custom styles
-			containerEl.empty();
-			containerEl.addClass('meld-encrypt-block');
-			
-			// Create the lock button
-			const lockButton = containerEl.createEl('button', {
-				cls: 'meld-encrypt-button',
-				text: hint
-			});
-			
-			// Add lock icon
-			const lockIcon = lockButton.createSpan({ cls: 'meld-encrypt-icon' });
-			lockIcon.innerHTML = '🔒';
-			lockButton.prepend(lockIcon);
-			
-			// Add click handler
-			lockButton.addEventListener('click', async () => {
-				await this.decryptEncryptedBlock(encryptedData, containerEl, encryptedText);
-			});
-			
-		} catch (error) {
-			console.error('Failed to render encrypted block:', error);
-			// Fallback: show the raw text
-			containerEl.textContent = 'Invalid encrypted data';
-		}
-	}
-
-	private async decryptEncryptedBlock(encryptedData: any, containerEl: HTMLElement, encryptedText: string) {
+	private async decryptInlineSecret(encryptedData: any) {
 		try {
 			// Ask for password
 			const pm = new PluginPasswordModal(
 				this.plugin.app,
-				'Decrypt Text',
+				'Decrypt Secret',
 				false,
 				false,
 				{ password: '', hint: encryptedData.hint || '' }
@@ -158,27 +145,8 @@ export default class FeatureTextEncrypt implements IMeldEncryptPluginFeature {
 				throw new Error('Invalid password or corrupted data');
 			}
 
-			// Show decrypted text temporarily
-			containerEl.empty();
-			containerEl.removeClass('meld-encrypt-block');
-			containerEl.addClass('meld-decrypt-block');
-			
-			const textContent = containerEl.createDiv({ cls: 'meld-decrypt-content' });
-			textContent.textContent = decryptedText;
-			
-			const hideButton = containerEl.createEl('button', {
-				cls: 'meld-decrypt-hide-button',
-				text: 'Hide'
-			});
-			
-			hideButton.addEventListener('click', () => {
-				// Restore encrypted block
-				containerEl.empty();
-				containerEl.removeClass('meld-decrypt-block');
-				this.renderEncryptedBlock(containerEl, encryptedText, null);
-			});
-			
-			new Notice('🔓 Text decrypted 🔓');
+			// Show decrypted text in a notice or modal
+			new Notice(`🔓 Secret: ${decryptedText}`, 5000);
 		} catch (error) {
 			if (error) {
 				new Notice(`Decryption error: ${error}`, 10000);
@@ -209,11 +177,10 @@ export default class FeatureTextEncrypt implements IMeldEncryptPluginFeature {
 				selectedText
 			);
 
-			const encryptedText = JsonFileEncoding.encode(encryptedData);
-
-			// Replace selected text with meld-encrypt code block
-			const wrappedEncryptedText = `\`\`\`meld-encrypt\n${encryptedText}\n\`\`\``;
-			editor.replaceSelection(wrappedEncryptedText);
+			// Create inline format: `secret {JSON}`
+			const jsonStr = JSON.stringify(encryptedData);
+			const inlineEncryptedText = `\`secret ${jsonStr}\``;
+			editor.replaceSelection(inlineEncryptedText);
 
 			new Notice('🔐 Text encrypted 🔐');
 		} catch (error) {
@@ -225,18 +192,14 @@ export default class FeatureTextEncrypt implements IMeldEncryptPluginFeature {
 
 	private async decryptSelectedText(editor: Editor, selectedText: string) {
 		try {
-			let cleanText = selectedText.trim();
-			
-			// Handle meld-encrypt code blocks
-			if (this.isEncryptedCodeBlock(selectedText)) {
-				cleanText = this.extractJsonFromCodeBlock(selectedText);
-			} else if (cleanText.startsWith('`') && cleanText.endsWith('`')) {
-				// Handle inline code
-				cleanText = cleanText.slice(1, -1);
+			// Extract JSON from inline format
+			const match = selectedText.match(/^`secret\s+(.+)`$/);
+			if (!match) {
+				throw new Error('Invalid encrypted format');
 			}
 
-			// Decode the encrypted data
-			const encryptedData = JsonFileEncoding.decode(cleanText);
+			const jsonStr = match[1];
+			const encryptedData = JSON.parse(jsonStr);
 
 			// Ask for password
 			const pm = new PluginPasswordModal(
