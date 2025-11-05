@@ -60,16 +60,6 @@ export default class MeldEncrypt extends Plugin {
 			await f.onload( this, this.settings );
 		});
 
-		// Auto re-encrypt decrypted views when leaving a file
-		this.registerEvent(this.app.workspace.on('file-open', () => {
-			if (!this.settings.autoReEncryptOnLeave) return;
-			// trigger markdown re-render so custom decrypted blocks revert
-			const active = this.app.workspace.getActiveViewOfType((window as any).MarkdownView);
-			if (active && typeof (active as any).previewMode?.rerender === 'function') {
-				(active as any).previewMode.rerender(true);
-			}
-		}));
-
 	}
 	
 	override onunload() {
@@ -87,7 +77,6 @@ export default class MeldEncrypt extends Plugin {
 			rememberPasswordTimeout: 30,
 			rememberPasswordLevel: SessionPasswordService.LevelVault,
 			rememberPasswordExternalFilePaths: [],
-			autoReEncryptOnLeave: true,
 
 			featureWholeNoteEncrypt: {
 			}
