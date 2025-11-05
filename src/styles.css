@@ -12,3 +12,106 @@ div[data-type="meld-encrypted-view"] .view-content {
 }
 
 /* END FEATURE ENCRYPTED MD */
+
+/* FEATURE TEXT ENCRYPT */
+
+.meld-encrypt-block {
+  display: inline-flex;
+  align-items: center;
+  margin: 4px 0;
+  border-radius: 6px;
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  padding: 2px;
+  font-family: var(--font-monospace);
+}
+
+.meld-encrypt-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--interactive-normal);
+  border: none;
+  border-radius: 4px;
+  color: var(--text-normal);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-ui-medium);
+}
+
+.meld-encrypt-button:hover {
+  background: var(--interactive-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.meld-encrypt-button:active {
+  transform: translateY(0);
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+.meld-encrypt-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.meld-decrypt-block {
+  display: block;
+  margin: 8px 0;
+  padding: 12px;
+  background: var(--background-primary-alt);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  border-left: 4px solid var(--interactive-accent);
+}
+
+.meld-decrypt-content {
+  font-family: var(--font-text);
+  color: var(--text-normal);
+  line-height: 1.6;
+  margin-bottom: 12px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.meld-decrypt-hide-button {
+  padding: 4px 8px;
+  background: var(--interactive-normal);
+  border: none;
+  border-radius: 4px;
+  color: var(--text-muted);
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-ui-small);
+}
+
+.meld-decrypt-hide-button:hover {
+  background: var(--interactive-hover);
+  color: var(--text-normal);
+}
+
+/* Dark theme adjustments */
+.theme-dark .meld-encrypt-block {
+  background: var(--background-primary);
+  border-color: var(--background-modifier-border-hover);
+}
+
+.theme-dark .meld-encrypt-button {
+  background: var(--background-secondary-alt);
+}
+
+.theme-dark .meld-encrypt-button:hover {
+  background: var(--background-modifier-hover);
+}
+
+.theme-dark .meld-decrypt-block {
+  background: var(--background-secondary);
+  border-color: var(--background-modifier-border-hover);
+}
+
+/* END FEATURE TEXT ENCRYPT */
