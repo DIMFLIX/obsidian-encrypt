@@ -35,7 +35,7 @@ div[data-type="meld-encrypted-view"] .view-content {
   background: var(--interactive-accent);
   border: none;
   border-radius: 10px;
-  color: var(--text-on-accent);
+  color: var(--text-accent);
   font-size: 13px;
   letter-spacing: 0.2px;
   font-weight: 600;
