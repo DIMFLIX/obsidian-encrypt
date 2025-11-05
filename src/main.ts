@@ -3,7 +3,6 @@ import MeldEncryptSettingsTab from './settings/MeldEncryptSettingsTab.ts';
 import { IMeldEncryptPluginSettings } from './settings/MeldEncryptPluginSettings.ts';
 import { IMeldEncryptPluginFeature } from './features/IMeldEncryptPluginFeature.ts';
 import { SessionPasswordService } from './services/SessionPasswordService.ts';
-import FeatureInplaceEncrypt from './features/feature-inplace-encrypt/FeatureInplaceEncrypt.ts';
 import FeatureConvertNote from './features/feature-convert-note/FeatureConvertNote.ts';
 import FeatureWholeNoteEncryptV2 from './features/feature-whole-note-encrypt/FeatureWholeNoteEncrypt.ts';
 
@@ -23,7 +22,6 @@ export default class MeldEncrypt extends Plugin {
 		this.enabledFeatures.push(
 			new FeatureWholeNoteEncryptV2(),
 			new FeatureConvertNote(),
-			new FeatureInplaceEncrypt(),
 		);
 
 		this.addSettingTab(
@@ -45,6 +43,15 @@ export default class MeldEncrypt extends Plugin {
 				new Notice( `Items cleared: ${itemsCleared}` );
 			},
 		});
+
+		this.addRibbonIcon(
+			'shield-ellipsis',
+			'Clear Session Password Cache',
+			(_) => {
+				const itemsCleared = SessionPasswordService.clear();
+				new Notice( `Items cleared: ${itemsCleared}` );
+			}
+		);
 
 		// load features
 		this.enabledFeatures.forEach(async f => {
@@ -70,12 +77,6 @@ export default class MeldEncrypt extends Plugin {
 			rememberPasswordExternalFilePaths: [],
 
 			featureWholeNoteEncrypt: {
-			},
-			
-			featureInplaceEncrypt:{
-				expandToWholeLines: false,
-				markerSearchLimit: 10000,
-				showMarkerWhenReadingDefault: true
 			}
 		}
 

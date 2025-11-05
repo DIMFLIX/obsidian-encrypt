@@ -8,3 +8,26 @@ export const ENCRYPTED_FILE_EXTENSIONS = [
 	ENCRYPTED_FILE_EXTENSION_MDENC,
 	ENCRYPTED_FILE_EXTENSION_ENCRYPTED
 ];
+
+export const POTENTIALLY_ENCRYPTED_FILE_EXTENSIONS = [
+	...ENCRYPTED_FILE_EXTENSIONS,
+	'md'
+];
+
+export const IMAGE_FILE_EXTENSIONS = [
+	'png', 
+	'jpg', 
+	'jpeg', 
+	'gif', 
+	'webp', 
+	'bmp', 
+	'svg', 
+	'ico', 
+	'tiff', 
+	'tif'
+];
+
+export const DEFAULT_ENCRYPTABLE_FILE_EXTENSIONS = [
+	'md',
+	...IMAGE_FILE_EXTENSIONS,
+];
