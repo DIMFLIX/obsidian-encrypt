@@ -77,8 +77,8 @@ export default class FeatureTextEncrypt implements IMeldEncryptPluginFeature {
 	buildSettingsUi(containerEl: HTMLElement, saveSettingCallback: () => Promise<void>): void {}
 
 	private isTextEncrypted(text: string): boolean {
-		// Check for inline format: `secret {...encrypted JSON...}`
-		const inlineMatch = text.match(/^`secret\s+([^`]+)`$/);
+		// Check for inline format: `meld-encrypt {...encrypted JSON...}`
+		const inlineMatch = text.match(/^`meld-encrypt\s+([^`]+)`$/);
 		if (inlineMatch) {
 			try {
 				const jsonStr = inlineMatch[1];
@@ -98,7 +98,7 @@ export default class FeatureTextEncrypt implements IMeldEncryptPluginFeature {
 			const text = codeblock.innerText.trim();
 			
 			// Check for our inline encrypted format
-			const match = text.match(/^secret\s+(.+)$/);
+			const match = text.match(/^meld-encrypt\s+(.+)$/);
 			if (match) {
 				try {
 					const jsonStr = match[1];
@@ -108,6 +108,11 @@ export default class FeatureTextEncrypt implements IMeldEncryptPluginFeature {
 						// Replace with SVG button
 						codeblock.empty();
 						codeblock.addClass('meld-inline-secret-button');
+						
+						// Add hint text if available
+						if (encryptedData.hint && encryptedData.hint.trim()) {
+							codeblock.setAttribute('title', `Hint: ${encryptedData.hint}`);
+						}
 						
 						// Add click handler
 						codeblock.addEventListener('click', async (e) => {
@@ -177,9 +182,9 @@ export default class FeatureTextEncrypt implements IMeldEncryptPluginFeature {
 				selectedText
 			);
 
-			// Create inline format: `secret {JSON}`
+			// Create inline format: `meld-encrypt {JSON}`
 			const jsonStr = JSON.stringify(encryptedData);
-			const inlineEncryptedText = `\`secret ${jsonStr}\``;
+			const inlineEncryptedText = `\`meld-encrypt ${jsonStr}\``;
 			editor.replaceSelection(inlineEncryptedText);
 
 			new Notice('🔐 Text encrypted 🔐');
@@ -193,7 +198,7 @@ export default class FeatureTextEncrypt implements IMeldEncryptPluginFeature {
 	private async decryptSelectedText(editor: Editor, selectedText: string) {
 		try {
 			// Extract JSON from inline format
-			const match = selectedText.match(/^`secret\s+(.+)`$/);
+			const match = selectedText.match(/^`meld-encrypt\s+(.+)`$/);
 			if (!match) {
 				throw new Error('Invalid encrypted format');
 			}
