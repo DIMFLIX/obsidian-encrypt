@@ -7,8 +7,5 @@ export interface IMeldEncryptPluginSettings {
 	rememberPasswordLevel: string;
 	rememberPasswordExternalFilePaths: string[];
 
-	// When enabled, decrypted inline blocks are auto-hidden when leaving a note
-	autoReEncryptOnLeave: boolean;
-
 	featureWholeNoteEncrypt : IFeatureWholeNoteEncryptSettings;
 }
