@@ -40,6 +40,18 @@ export default class MeldEncryptSettingsTab extends PluginSettingTab {
 			})
 		;
 
+		new Setting(containerEl)
+			.setName('Auto re-encrypt on leaving note')
+			.setDesc('Hide any temporarily decrypted content when you leave the note.')
+			.addToggle(toggle => {
+				toggle
+					.setValue(this.settings.autoReEncryptOnLeave ?? true)
+					.onChange(async (value) => {
+						this.settings.autoReEncryptOnLeave = value;
+						await this.plugin.saveSettings();
+					});
+			});
+
 		const updateRememberPasswordSettingsUi = () => {
 			
 			if ( !this.settings.rememberPassword ){
