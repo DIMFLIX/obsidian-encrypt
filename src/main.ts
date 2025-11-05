@@ -5,6 +5,7 @@ import { IMeldEncryptPluginFeature } from './features/IMeldEncryptPluginFeature.
 import { SessionPasswordService } from './services/SessionPasswordService.ts';
 import FeatureConvertNote from './features/feature-convert-note/FeatureConvertNote.ts';
 import FeatureWholeNoteEncryptV2 from './features/feature-whole-note-encrypt/FeatureWholeNoteEncrypt.ts';
+import FeatureTextEncrypt from './features/feature-text-encrypt/FeatureTextEncrypt.ts';
 
 export default class MeldEncrypt extends Plugin {
 
@@ -22,6 +23,7 @@ export default class MeldEncrypt extends Plugin {
 		this.enabledFeatures.push(
 			new FeatureWholeNoteEncryptV2(),
 			new FeatureConvertNote(),
+			new FeatureTextEncrypt(),
 		);
 
 		this.addSettingTab(
